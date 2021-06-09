@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form id="form1" method="POST">
+      <label>Product Name:</label
+      ><input type="text" name="productName" class="productName" />
+      <br />
+      <label>Product ID:</label
+      ><input type="text" name="productID" class="productID" />
+      <br />
+      <label>Price</label><input type="Number" name="price" class="price" />
+      <br />
+      <label>Quantity</label
+      ><input type="Number" name="quantity" class="quantity" />
+      <br />
+      <button type="Submit" id="add">Submit</button>
+    </form>
+    <h1>Dat sach san pham</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Product ID:</th>
+          <th>Product Name:</th>
+          <th>Price</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="detail"></p>
+  </body>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script type="text/javascript">
+    function render() {
+      $.ajax({
+        type: "GET",
+        url: "http://localhost:3010/api",
+        dataType: "json",
+        success: function (response) {
+          console.log(response);
+          var tbodyEl = $("tbody");
+
+          tbodyEl.html("");
+
+          response.map(function (product) {
+            tbodyEl.append(`
+                           <tr>
+                           <td class="id" id="id">${product.productID}</td>
+                           <td><input type="text" class="productName" value=${product.productName} ></td>
+                           <td><input type="text" class="price"  value=${product.price}></td>
+                           <td><input type="text" class="quantity" value=${product.quantity}></td>
+                           <td>
+                           <button class="update-button">UPDATE</button>
+                           <button class="delete-button" onClick='deleteItem("${product._id}")'>DELETE</button>
+                           <button class="detail-button" onClick='detailItem("${product._id}")'>Detail</button>
+
+                           </td>
+                           </tr>
+                           `);
+          });
+        },
+        error: function (err) {
+          console.log("loi ", err);
+          //   <button class="update-button" onClick='UpdateItem("${product._id}")'>UPDATE</button>
+        },
+      });
+    }
+    render();
+    function deleteItem(id) {
+      console.log(id);
+      $.ajax({
+        url: "/api/" + id,
+        method: "DELETE",
+        contentType: "application/json",
+        success: function (response) {
+          console.log("response " + response);
+          render();
+        },
+      });
+    }
+    // function UpdateItem(id) {
+    //   console.log(id);
+
+    // let  data ={
+    //     productID: $(".productID").val(''),
+    //       productName: $(".productName").val(''),
+    //       price: $(".price").val(''),
+    //       quantity:  $(".quantity").val(''),
+    //     }
+    //     console.log(data);
+    //   $.ajax({
+    //     url: "/api/" + id,
+    //     method: "PUT",
+    //     contentType: "application/json",
+    //     data: JSON.stringify({
+    //       productID: $("#productName").val(''),
+    //       productName: $("#productName").val(''),
+    //       price: $("#price").val(''),
+    //       quantity:  $("#quantity").val(''),
+
+    //     }),
+    //     success: function (response) {
+    //         console.log('response');
+
+    //       render();
+    //     },
+    //   });
+    // }
+    $("table").on("click", ".update-button", function () {
+      //alert('asssaaa');
+      var rowEl = $(this).closest("tr");
+      var productID = rowEl.find(".productID").text();
+      var productName = rowEl.find(".productName").val();
+      var price = rowEl.find(".price").val();
+      var quantity = rowEl.find(".quantity").val();
+
+      $.ajax({
+        url: "/api/" + id,
+        method: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify({
+          productID: productID,
+          productName: productName,
+          price: price,
+          quantity: quantity,
+        }),
+        success: function (response) {
+          console.log(response);
+          render();
+        },
+      });
+    });
+    $("#form1").submit(function (event) {
+      //   alert('asssaaa');
+
+      event.preventDefault();
+      $.ajax({
+        type: "POST",
+        url: "/api",
+        data: $("#form1").serialize(),
+        dataType: "json",
+        success: function (response) {
+          console.log("response");
+          clearInputs();
+          render();
+        },
+        error: function () {},
+      });
+    });
+    function clearInputs() {
+      $(".productName").val("");
+      $(".productID").val("");
+      $(".price").val("");
+      $(".quantity").val("");
+    }
+
+    function detailItem(id) {
+      console.log(id);
+      $.ajax({
+        type: "GET",
+        url: "http://localhost:3010/api/" + id,
+        dataType: "json",
+        success: function (response) {
+          console.log(response);
+
+          var detail = $(".detail");
+          detail.html("");
+          var div = `
+          <p>Product ID :${response.productID} </p>
+          <p>Price ${response.price} </p>
+          <p>Product Name ${response.productName} </p>
+          <p>Quantity ${response.quantity} </p>
+
+          `;
+          detail.append(div);
+        },
+        error: function (err) {
+          console.log("loi ", err);
+        },
+      });
+    }
+  </script>
+</html>
